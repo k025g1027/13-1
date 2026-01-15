@@ -1,11 +1,7 @@
 #include <Novice.h>
 #include <math.h>
 #include "Enemy.h"
-
-// 2Dベクトル構造体
-struct Vector2 {
-	float x, y;
-};
+#include "Vector2.h"
 
 struct Player {
 	Vector2 position;
@@ -15,11 +11,7 @@ struct Player {
 struct Bullet {
 	Vector2 position;
 	float speed;
-	int isActive;
-};
-struct Enemys {
-	Vector2 position;
-	float speed;
+	float radius;
 	int isActive;
 };
 
@@ -46,18 +38,12 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 	for(int i = 0; i < 100; i++){
 		bullet[i].position = { -100.0f, -100.0f };
 		bullet[i].speed = 10.0f;
+		bullet[i].radius = 10.0f;
 		bullet[i].isActive = false;
 	}
 
-	Enemy enemy1;
-	enemy1.posX = 100.0f;
-	enemy1.posY = 200.0f;
-	enemy1.speed = 5.0f;
-
-	Enemy enemy2;
-	enemy2.posX = 200.0f;
-	enemy2.posY = 400.0f;
-	enemy2.speed = -5.0f;
+	Enemy enemy1(200.0f, 100.0f, 5.0f, 15);
+	Enemy enemy2(200.0f, 300.0f, 7.0f, 15);
 
 	// ウィンドウの×ボタンが押されるまでループ
 	while (Novice::ProcessMessage() == 0) {
@@ -100,35 +86,22 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 					bullet[i].position = { -100.0f, -100.0f };
 				}
 			}
-		}
-		//敵
-		if (enemy1.isAlive) {
-			enemy1.Update();
-		}
-		if (enemy2.isAlive) {
-			enemy2.Update();
-		}
-		//弾と敵の当たり判定
-		for(int i = 0; i < 100; i++){
-			if(bullet[i].isActive){
-				float dx1 = bullet[i].position.x - enemy1.posX;
-				float dy1 = bullet[i].position.y - enemy1.posY;
-				float distance1 = sqrtf(dx1 * dx1 + dy1 * dy1);
-				if(distance1 < 15.0f){
-					bullet[i].isActive = false;
-					bullet[i].position = { -100.0f, -100.0f };
-					enemy1.Kill();
-				}
-				float dx2 = bullet[i].position.x - enemy2.posX;
-				float dy2 = bullet[i].position.y - enemy2.posY;
-				float distance2 = sqrtf(dx2 * dx2 + dy2 * dy2);
-				if(distance2 < 15.0f){
-					bullet[i].isActive = false;
-					bullet[i].position = { -100.0f, -100.0f };
-					enemy2.Kill();
-				}
+			//弾と敵の当たり判定
+			if (enemy1.CheckHit(bullet[i].position, bullet[i].radius) && bullet[i].isActive) {
+				bullet[i].isActive = false;
+				bullet[i].position = { -100.0f, -100.0f };
+				enemy1.Kill();
+			}
+			if (enemy2.CheckHit(bullet[i].position, bullet[i].radius) && bullet[i].isActive) {
+				bullet[i].isActive = false;
+				bullet[i].position = { -100.0f, -100.0f };
+				enemy2.Kill();
 			}
 		}
+		//敵
+		enemy1.Update();
+		enemy2.Update();
+		
 
 
 
@@ -142,16 +115,16 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 		///
 
 
+		enemy1.Draw();
+		enemy2.Draw();
 
 		for (int i = 0; i < 100; i++) {
 			Novice::DrawEllipse(
 				static_cast<int>(bullet[i].position.x),
 				static_cast<int>(bullet[i].position.y),
-				10,
-				10,
-				0.0f,
-				WHITE,
-				kFillModeSolid);
+				static_cast<int>(bullet[i].radius),
+				static_cast<int>(bullet[i].radius),
+				0.0f,WHITE,kFillModeSolid);
 		}
 
 		Novice::DrawEllipse(
@@ -163,27 +136,7 @@ int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
 			GREEN,
 			kFillModeSolid);
 
-		if (enemy1.isAlive) {
-			Novice::DrawEllipse(
-				static_cast<int>(enemy1.posX),
-				static_cast<int>(enemy1.posY),
-				enemy1.size,
-				enemy1.size,
-				0.0f,
-				RED,
-				kFillModeSolid);
-		}
 		
-		if (enemy2.isAlive) {
-			Novice::DrawEllipse(
-				static_cast<int>(enemy2.posX),
-				static_cast<int>(enemy2.posY),
-				enemy2.size,
-				enemy2.size,
-				0.0f,
-				RED,
-				kFillModeSolid);
-		}
 
 		///
 		/// ↑描画処理ここまで

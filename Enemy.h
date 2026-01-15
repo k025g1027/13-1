@@ -1,37 +1,23 @@
 #pragma once
+#include "Vector2.h"
 
 class Enemy {
 protected:
+	float posX_;
+	float posY_;
+	float speed_;
+	int radius_;
+	int isAlive_;
+
+
 public:
-	float posX;
-	float posY;
-	float speed;
-	int size;
 	static int isAllAlive;
-	int isAlive;
+	Enemy(float x, float y, float speed, int radius);
+	void Kill();
+	void Update();
+	void Draw() const;
 
-	Enemy() {
-		posX = 0.0f;
-		posY = 0.0f;
-		speed = 1.0f;
-		size = 20;
-		isAllAlive = true;
-		isAlive = true;
-	}
+	bool CheckHit(const Vector2& bulletPos, float bulletRadius) const;
+	bool IsAlive() const;
 	
-	void Kill() {
-		isAllAlive = false;
-	}
-
-	void Update() {
-		posX += speed;
-		if(posX < 0 || posX > 1280){
-			speed *= -1;
-		}
-
-		if (!isAllAlive) {
-			isAlive = false;
-		}
-
-	}
 };
